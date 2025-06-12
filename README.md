@@ -1,2 +1,0 @@
-# transaction-service
-transaction-service
