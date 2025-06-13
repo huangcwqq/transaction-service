@@ -31,7 +31,7 @@ public class TransactionControllerTest {
 
     @Test
     void testObtainToken_Success() throws Exception {
-        mockMvc.perform(post("/api/transactions/token"))
+        mockMvc.perform(get("/api/transactions/token"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(emptyOrNullString())));
     }

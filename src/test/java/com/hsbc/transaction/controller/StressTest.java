@@ -63,7 +63,7 @@ public class StressTest {
         int total = 100;
         String[] ids = new String[total];
         for (int i = 0; i < total; i++) {
-            String token = mockMvc.perform(post("/api/transactions/token")).andReturn().getResponse().getContentAsString();
+            String token = mockMvc.perform(get("/api/transactions/token")).andReturn().getResponse().getContentAsString();
             String json = String.format(
                     "{\"preventDuplicateToken\":\"%s\",\"accountId\":\"acc-%d\",\"amount\":100.00,\"type\":\"DEPOSIT\",\"description\":\"desc\"}",
                     token, i
@@ -134,7 +134,7 @@ public class StressTest {
         int total = 50;
         String[] ids = new String[total];
         for (int i = 0; i < total; i++) {
-            String token = mockMvc.perform(post("/api/transactions/token")).andReturn().getResponse().getContentAsString();
+            String token = mockMvc.perform(get("/api/transactions/token")).andReturn().getResponse().getContentAsString();
             String json = String.format(
                     "{\"preventDuplicateToken\":\"%s\",\"accountId\":\"acc-%d\",\"amount\":100.00,\"type\":\"DEPOSIT\",\"description\":\"desc\"}",
                     token, i
@@ -181,7 +181,7 @@ public class StressTest {
         int total = 50;
         String[] ids = new String[total];
         for (int i = 0; i < total; i++) {
-            String token = mockMvc.perform(post("/api/transactions/token")).andReturn().getResponse().getContentAsString();
+            String token = mockMvc.perform(get("/api/transactions/token")).andReturn().getResponse().getContentAsString();
             String json = String.format(
                     "{\"preventDuplicateToken\":\"%s\",\"accountId\":\"acc-%d\",\"amount\":100.00,\"type\":\"DEPOSIT\",\"description\":\"desc\"}",
                     token, i
