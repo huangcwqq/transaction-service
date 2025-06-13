@@ -1,5 +1,6 @@
 package com.hsbc.transaction.config;
 
+import com.hsbc.transaction.common.BusinessException;
 import com.hsbc.transaction.common.DuplicateTransactionException;
 import com.hsbc.transaction.common.TransactionNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,17 @@ import java.util.stream.Collectors;
  */
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(BusinessException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Object> handleTransactionNotFoundException(BusinessException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.OK.value());
+        body.put("error", "Business Exception");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
 
     /**
      * 处理TransactionNotFoundException，返回404 Not Found。

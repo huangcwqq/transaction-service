@@ -189,8 +189,8 @@ public class TransactionControllerIntegrationTest {
                 .andExpect(jsonPath("$.description", is("Updated Desc")));
 
         // 验证内存仓库中的数据是否已更新
-        assertTrue(inMemoryTransactionRepository.findById(id).isPresent());
-        assertEquals(new BigDecimal("120.00"), inMemoryTransactionRepository.findById(id).get().getAmount());    }
+        assertNotNull(inMemoryTransactionRepository.findById(id));
+        assertEquals(new BigDecimal("120.00"), inMemoryTransactionRepository.findById(id).getAmount());    }
 
     /**
      * 测试更新不存在的交易时API端点返回404。

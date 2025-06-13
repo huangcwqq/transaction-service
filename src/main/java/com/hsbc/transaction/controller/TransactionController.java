@@ -1,17 +1,17 @@
 package com.hsbc.transaction.controller;
 
+import com.hsbc.transaction.common.RestResponse;
 import com.hsbc.transaction.model.Transaction;
 import com.hsbc.transaction.request.CreateTransactionRequest;
 import com.hsbc.transaction.request.UpdateTransactionRequest;
 import com.hsbc.transaction.response.TransactionResponse;
 import com.hsbc.transaction.service.TransactionService;
+import com.hsbc.transaction.util.TokenUtil;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,22 +28,29 @@ public class TransactionController {
 
     private final TransactionService transactionService;
 
-    // 通过构造函数注入TransactionService
+    // 通过构造函数注入TransactionService，更安全
     public TransactionController(TransactionService transactionService) {
         this.transactionService = transactionService;
+    }
+
+    /**
+     * 生成防重token返回给前端入参调用
+     */
+    @PostMapping
+    public RestResponse<String> generateToken() {
+        return RestResponse.ok(TokenUtil.generateToken());
     }
 
     /**
      * 创建一笔新交易。
      * HTTP Method: POST
      * URL: /api/transactions
-     * @param request 包含交易数据的请求体，通过@Valid进行数据验证。
-     * @return 创建成功的交易响应DTO和201 Created状态码。
+     *
      */
     @PostMapping
-    public ResponseEntity<TransactionResponse> createTransaction(@Valid @RequestBody CreateTransactionRequest request) {
+    public RestResponse<TransactionResponse> createTransaction(@Valid @RequestBody CreateTransactionRequest request) {
         TransactionResponse response = transactionService.createTransaction(request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return RestResponse.ok(response);
     }
 
     /**
@@ -54,9 +61,9 @@ public class TransactionController {
      * @return 交易响应DTO和200 OK状态码。如果未找到，GlobalExceptionHandler会返回404。
      */
     @GetMapping("/{id}")
-    public ResponseEntity<TransactionResponse> getTransactionById(@PathVariable String id) {
+    public RestResponse<TransactionResponse> getTransactionById(@PathVariable String id) {
         TransactionResponse response = transactionService.getTransactionById(id);
-        return ResponseEntity.ok(response);
+        return RestResponse.ok(response);
     }
 
     /**
@@ -66,9 +73,9 @@ public class TransactionController {
      * @return 所有交易响应DTO的列表和200 OK状态码。
      */
     @GetMapping
-    public ResponseEntity<List<TransactionResponse>> getAllTransactions() {
+    public RestResponse<List<TransactionResponse>> getAllTransactions() {
         List<TransactionResponse> transactions = transactionService.getAllTransactions();
-        return ResponseEntity.ok(transactions);
+        return RestResponse.ok(transactions);
     }
 
     /**
@@ -80,9 +87,9 @@ public class TransactionController {
      * @return 更新后的交易响应DTO和200 OK状态码。如果未找到，GlobalExceptionHandler会返回404。
      */
     @PutMapping("/{id}")
-    public ResponseEntity<TransactionResponse> updateTransaction(@PathVariable String id, @Valid @RequestBody UpdateTransactionRequest request) {
+    public RestResponse<TransactionResponse> updateTransaction(@PathVariable String id, @Valid @RequestBody UpdateTransactionRequest request) {
         TransactionResponse response = transactionService.updateTransaction(id, request);
-        return ResponseEntity.ok(response);
+        return RestResponse.ok(response);
     }
 
     /**
@@ -93,9 +100,9 @@ public class TransactionController {
      * @return 204 No Content状态码。如果未找到，GlobalExceptionHandler会返回404。
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTransaction(@PathVariable String id) {
+    public RestResponse<Void> deleteTransaction(@PathVariable String id) {
         transactionService.deleteTransaction(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204 No Content 表示请求成功但没有返回数据。
+        return RestResponse.ok();
     }
 
     /**
@@ -105,7 +112,7 @@ public class TransactionController {
      * @return 包含交易列表的分页响应对象和 200 OK 状态码
      */
     @GetMapping("/page")
-    public ResponseEntity<Page<TransactionResponse>> getAllTransactions(
+    public RestResponse<Page<TransactionResponse>> getAllTransactions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -115,7 +122,7 @@ public class TransactionController {
                 .map(TransactionResponse::fromEntity)
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(new PageImpl<>(content, pageable, transactionPage.getTotalElements()));
+        return RestResponse.ok(new PageImpl<>(content, pageable, transactionPage.getTotalElements()));
     }
 }
 

@@ -31,9 +31,9 @@ public class InMemoryTransactionRepository implements TransactionRepository {
     }
 
     @Override
-    public Optional<Transaction> findById(String id) {
+    public Transaction findById(String id) {
         // 从map中根据ID获取交易，使用Optional包装结果，避免空指针。
-        return Optional.ofNullable(transactions.get(id));
+        return transactions.get(id);
     }
 
     @Override

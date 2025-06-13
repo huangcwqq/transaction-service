@@ -1,12 +1,13 @@
 package com.hsbc.transaction.service;
 
-import com.hsbc.transaction.common.DuplicateTransactionException;
-import com.hsbc.transaction.common.TransactionNotFoundException;
+import com.hsbc.transaction.common.TransactionErrors;
 import com.hsbc.transaction.model.Transaction;
 import com.hsbc.transaction.repository.TransactionRepository;
 import com.hsbc.transaction.request.CreateTransactionRequest;
 import com.hsbc.transaction.request.UpdateTransactionRequest;
 import com.hsbc.transaction.response.TransactionResponse;
+import com.hsbc.transaction.util.TokenUtil;
+import com.hsbc.transaction.util.TransactionIdGenerateUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 /**
  * TransactionService的实现类。
  * 包含实际的业务逻辑和对Repository层的调用。
- * @Service 注解表示这是一个Spring管理的业务服务组件。
+ *
  */
 @Service
 public class TransactionServiceImpl implements TransactionService {
@@ -30,14 +31,15 @@ public class TransactionServiceImpl implements TransactionService {
         this.transactionRepository = transactionRepository;
     }
 
-
     @Override
     public TransactionResponse createTransaction(CreateTransactionRequest request) {
-        String newTransactionId = request.getId();
+        TokenUtil.validateAndConsumeToken(request.getPreventDuplicateToken());
+
+        String newTransactionId = TransactionIdGenerateUtil.generateTransactionId();
 
         // 检查交易 ID 是否已存在，防止重复创建
         if (transactionRepository.existsById(newTransactionId)) {
-            throw new DuplicateTransactionException(newTransactionId);
+            throw TransactionErrors.repeatTransaction(String.format("重复的交易ID: %s", newTransactionId));
         }
 
         // 构建Transaction实体
@@ -59,8 +61,10 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public TransactionResponse getTransactionById(String id) {
         // 根据ID查找交易，如果找不到则抛出TransactionNotFoundException
-        Transaction transaction = transactionRepository.findById(id)
-                .orElseThrow(() -> new TransactionNotFoundException("交易未找到，ID: " + id));
+        Transaction transaction = transactionRepository.findById(id);
+        if(transaction == null){
+            throw TransactionErrors.transactionNotFound(String.format("交易未找到，ID: %s", id));
+        }
         // 转换为响应DTO并返回
         return TransactionResponse.fromEntity(transaction);
     }
@@ -80,8 +84,10 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public TransactionResponse updateTransaction(String id, UpdateTransactionRequest request) {
         // 检查交易是否存在
-        Transaction existingTransaction = transactionRepository.findById(id)
-                .orElseThrow(() -> new TransactionNotFoundException("无法更新，交易未找到，ID: " + id));
+        Transaction existingTransaction = transactionRepository.findById(id);
+        if(existingTransaction == null){
+            throw TransactionErrors.transactionNotFound(String.format("无法更新，交易未找到，ID: %s", id));
+        }
 
         // 更新交易信息
         existingTransaction.setAmount(request.getAmount());
@@ -100,7 +106,7 @@ public class TransactionServiceImpl implements TransactionService {
     public void deleteTransaction(String id) {
         // 检查交易是否存在，如果不存在则抛出异常
         if (!transactionRepository.existsById(id)) {
-            throw new TransactionNotFoundException("无法删除，交易未找到，ID: " + id);
+            throw TransactionErrors.transactionNotFound((String.format("无法删除，交易未找到，ID: ", id)));
         }
         // 删除交易
         transactionRepository.deleteById(id);

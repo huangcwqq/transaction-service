@@ -24,7 +24,7 @@ public interface TransactionRepository {
      * @param id 交易ID
      * @return 包含交易的Optional，如果找不到则为空Optional
      */
-    Optional<Transaction> findById(String id);
+    Transaction findById(String id);
 
     /**
      * 获取所有交易。

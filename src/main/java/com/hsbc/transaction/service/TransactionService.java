@@ -1,6 +1,5 @@
 package com.hsbc.transaction.service;
 
-import com.hsbc.transaction.common.DuplicateTransactionException;
 import com.hsbc.transaction.model.Transaction;
 import com.hsbc.transaction.request.CreateTransactionRequest;
 import com.hsbc.transaction.request.UpdateTransactionRequest;
@@ -21,7 +20,7 @@ public interface TransactionService {
      * 如果请求中提供了 ID 且该 ID 已存在，则抛出 DuplicateTransactionException。
      * @param request 交易请求数据传输对象
      * @return 创建后的交易实体
-     * @throws DuplicateTransactionException 如果交易 ID 已存在
+     *
      */
     TransactionResponse createTransaction(CreateTransactionRequest request);
 

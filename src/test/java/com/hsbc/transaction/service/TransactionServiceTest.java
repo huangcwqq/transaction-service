@@ -134,7 +134,7 @@ public class TransactionServiceTest {
     @Test
     void getTransactionById_Success() {
         // 模拟行为：当调用 transactionRepository.findById(transactionId) 时返回一个包含交易的Optional。
-        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(transaction));
+        when(transactionRepository.findById(transactionId)).thenReturn(transaction);
 
         // 执行待测试方法
         TransactionResponse response = transactionService.getTransactionById(transactionId);
@@ -155,7 +155,7 @@ public class TransactionServiceTest {
     @Test
     void getTransactionById_NotFound_ThrowsException() {
         // 模拟行为：当调用 transactionRepository.findById(anyString()) 时返回空的Optional。
-        when(transactionRepository.findById(anyString())).thenReturn(Optional.empty());
+        when(transactionRepository.findById(anyString())).thenReturn(null);
 
         // 验证抛出TransactionNotFoundException异常
         assertThrows(TransactionNotFoundException.class, () ->
@@ -204,7 +204,7 @@ public class TransactionServiceTest {
 
         // 模拟行为：
         // 1. findById 返回现有交易
-        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(transaction));
+        when(transactionRepository.findById(transactionId)).thenReturn(transaction);
         // 2. update 返回更新后的交易（这里直接返回传入的existingTransaction，因为我们在Service层会修改它）
         when(transactionRepository.update(any(Transaction.class))).thenReturn(transaction); // update方法会修改传入的对象
 
@@ -229,7 +229,7 @@ public class TransactionServiceTest {
     @Test
     void updateTransaction_NotFound_ThrowsException() {
         // 模拟行为：findById 返回空的Optional
-        when(transactionRepository.findById(anyString())).thenReturn(Optional.empty());
+        when(transactionRepository.findById(anyString())).thenReturn(transaction);
 
         // 验证抛出TransactionNotFoundException异常
         assertThrows(TransactionNotFoundException.class, () ->
