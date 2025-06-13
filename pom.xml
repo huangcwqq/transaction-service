@@ -5,12 +5,12 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.0</version>
+        <version>3.4.5</version>
         <relativePath/>
     </parent>
     <groupId>com.hsbc</groupId>
     <artifactId>transactions</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>transactions</name>
     <description>HSBC Home Task: Transaction Management</description>
 

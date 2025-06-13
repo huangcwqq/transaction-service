@@ -141,11 +141,8 @@ class InMemoryTransactionRepositoryTest {
 
     @Test
     void testFindById_WhenIdIsNull_ShouldReturnNullIfNotPresent() {
-        // Arrange: put no null key
-        String nullId = null;
-
         // Act and Assert
-        assertThrows(NullPointerException.class, () -> repository.findById(nullId));
+        assertThrows(NullPointerException.class, () -> repository.findById(null));
     }
 
     /**

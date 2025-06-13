@@ -6,7 +6,6 @@ import org.springframework.cache.annotation.EnableCaching;
 
 /**
  * Spring Boot应用程序的入口点。
- * @SpringBootApplication 包含了@Configuration, @EnableAutoConfiguration, @ComponentScan，
  * 它们自动配置Spring应用并启用组件扫描。
  */
 @SpringBootApplication
