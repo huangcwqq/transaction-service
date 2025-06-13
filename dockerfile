@@ -1,39 +1,43 @@
 # 阶段 1: 构建阶段
-# 使用官方的Eclipse Temurin作为基础镜像，它包含了JDK 21
-FROM eclipse-temurin:21-jdk-jammy as builder
+FROM registry.cn-hangzhou.aliyuncs.com/dragonwell/dragonwell-21:latest as builder
 
-# 设置工作目录
 WORKDIR /app
 
-# 将Maven的pom.xml和所有源代码复制到容器中
-# 这样做的好处是如果pom.xml没有变化，Maven依赖可以被缓存，加快后续构建
+# 安装 Maven
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
+
+# 复制依赖文件以利用缓存
 COPY pom.xml .
+# 如有 settings.xml 可一并复制
+# COPY conf/maven/settings.xml ./
+RUN mvn dependency:go-offline
+
+# 复制源码
 COPY src ./src
 
-# 构建Spring Boot应用程序
-# 使用-Dmaven.test.skip=true跳过测试，以加快镜像构建速度。
-# 如果需要在构建镜像时运行测试，请移除此参数。
-RUN mvn clean install -Dmaven.test.skip=true
+# 构建 Spring Boot 应用
+RUN mvn clean package -Dmaven.test.skip=true
 
 # 阶段 2: 运行时阶段
-# 使用更轻量级的JaveJRE镜像作为最终运行环境，减小镜像大小
-FROM eclipse-temurin:21-jre-jammy
+FROM registry.cn-hangzhou.aliyuncs.com/dragonwell/dragonwell-21:latest
 
-# 设置工作目录
 WORKDIR /app
 
-# 从构建阶段复制打包好的JAR文件
-# artifactId/version.jar是Maven默认打包的jar文件名
-# 假设你的pom.xml中artifactId是transactions，version是0.0.1-SNAPSHOT
-COPY --from=builder /app/target/transactions-0.0.1-SNAPSHOT.jar app.jar
+# 支持自定义 JAVA_OPTS
+ENV JAVA_OPTS=""
 
-# 暴露应用程序运行的端口
+# 应用标识和元数据
+ENV HSBC_APPLICATION=transaction-service
+LABEL hsbc-app="$HSBC_APPLICATION"
+
+# 复制构建产物，自动识别 jar
+COPY --from=builder /app/target/*.jar app.jar
+
 EXPOSE 8080
 
-# 定义容器启动时执行的命令
-# java -jar app.jar 会启动Spring Boot应用程序
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
 
-# 可以添加健康检查 (可选，但在生产环境中推荐)
+# 健康检查（可选）
 # HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-#  CMD curl --fail http://localhost:8080/actuator/health || exit 1
+#   CMD curl --fail http://localhost:8080/actuator/health || exit 1
+
