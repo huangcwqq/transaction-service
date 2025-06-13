@@ -1,6 +1,5 @@
 package com.hsbc.transaction.service;
 
-import com.hsbc.transaction.model.Transaction;
 import com.hsbc.transaction.request.CreateTransactionRequest;
 import com.hsbc.transaction.request.UpdateTransactionRequest;
 import com.hsbc.transaction.response.TransactionResponse;
@@ -42,7 +41,7 @@ public interface TransactionService {
      * @param pageable 分页信息
      * @return 包含交易的分页结果
      */
-     Page<Transaction> getAllTransactions(Pageable pageable);
+     Page<TransactionResponse> getAllTransactions(Pageable pageable);
 
     /**
      * 更新一笔现有交易。

@@ -1,8 +1,8 @@
 package com.hsbc.transaction.config;
 
-import com.hsbc.transaction.common.BusinessException;
-import com.hsbc.transaction.common.DuplicateTransactionException;
+import com.hsbc.transaction.common.InvalidRequestException;
 import com.hsbc.transaction.common.TransactionNotFoundException;
+import com.sun.jdi.request.DuplicateRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -22,17 +22,6 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(BusinessException.class)
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Object> handleTransactionNotFoundException(BusinessException ex) {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.OK.value());
-        body.put("error", "Business Exception");
-        body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
-    }
-
     /**
      * 处理TransactionNotFoundException，返回404 Not Found。
      * @param ex TransactionNotFoundException实例
@@ -50,19 +39,35 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 处理DuplicateTransactionException，返回409 Conflict。
-     * @param ex DuplicateTransactionException实例
+     * 处理DuplicateRequestException，返回409 Conflict。
+     * @param ex DuplicateRequestException实例
      * @return 包含错误信息的ResponseEntity
      */
-    @ExceptionHandler(DuplicateTransactionException.class)
+    @ExceptionHandler(DuplicateRequestException.class)
     @ResponseStatus(HttpStatus.CONFLICT) // 设置HTTP状态码为409
-    public ResponseEntity<Object> handleDuplicateTransactionException(DuplicateTransactionException ex) {
+    public ResponseEntity<Object> handleDuplicateTransactionException(DuplicateRequestException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.CONFLICT.value());
         body.put("error", "Conflict");
         body.put("message", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+
+    /**
+     * 处理InvalidRequestException，返回400 Bad Request。
+     * @param ex InvalidRequestException实例
+     * @return 包含错误信息的ResponseEntity
+     */
+    @ExceptionHandler(InvalidRequestException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST) // 设置HTTP状态码为400
+    public ResponseEntity<Object> handleValidationExceptions(InvalidRequestException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Bad Request");
+        body.put("message",ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
     /**
@@ -102,8 +107,6 @@ public class GlobalExceptionHandler {
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         body.put("error", "Internal Server Error");
         body.put("message", "发生了一个未预期的错误: " + ex.getMessage());
-        // 生产环境中通常不直接暴露详细异常信息，这里为了演示目的，可以包含。
-        // ex.printStackTrace(); // 打印堆栈信息到控制台
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

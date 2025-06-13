@@ -32,7 +32,7 @@ public class InMemoryTransactionRepository implements TransactionRepository {
 
     @Override
     public Transaction findById(String id) {
-        // 从map中根据ID获取交易，使用Optional包装结果，避免空指针。
+        // 从map中根据ID获取交易,不存在时返回 null。
         return transactions.get(id);
     }
 
@@ -61,7 +61,7 @@ public class InMemoryTransactionRepository implements TransactionRepository {
         if (start < allTransactions.size()) {
             pagedTransactions = allTransactions.subList(start, end);
         } else {
-            pagedTransactions = List.of(); // 如果起始索引超出列表大小，返回空列表
+            pagedTransactions = new ArrayList<>(); // 如果起始索引超出列表大小，返回空列表
         }
 
         return new PageImpl<>(pagedTransactions, pageable, allTransactions.size());

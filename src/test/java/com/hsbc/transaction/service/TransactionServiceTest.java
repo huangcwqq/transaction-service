@@ -229,7 +229,7 @@ public class TransactionServiceTest {
     @Test
     void updateTransaction_NotFound_ThrowsException() {
         // 模拟行为：findById 返回空的Optional
-        when(transactionRepository.findById(anyString())).thenReturn(transaction);
+        when(transactionRepository.findById(anyString())).thenReturn(null);
 
         // 验证抛出TransactionNotFoundException异常
         assertThrows(TransactionNotFoundException.class, () ->
@@ -287,7 +287,7 @@ public class TransactionServiceTest {
         when(transactionRepository.findAll(pageable)).thenReturn(transactionPage);
 
         // 执行待测试方法
-        Page<Transaction> result = transactionService.getAllTransactions(pageable);
+        Page<TransactionResponse> result = transactionService.getAllTransactions(pageable);
 
         // 验证结果
         assertNotNull(result);
@@ -307,7 +307,7 @@ public class TransactionServiceTest {
         when(transactionRepository.findAll(pageable)).thenReturn(emptyPage);
 
         // 执行待测试方法
-        Page<Transaction> result = transactionService.getAllTransactions(pageable);
+        Page<TransactionResponse> result = transactionService.getAllTransactions(pageable);
 
         // 验证结果
         assertNotNull(result);

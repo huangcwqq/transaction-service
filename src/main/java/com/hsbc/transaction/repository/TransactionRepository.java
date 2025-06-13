@@ -1,6 +1,8 @@
 package com.hsbc.transaction.repository;
 
 import com.hsbc.transaction.model.Transaction;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.util.List;

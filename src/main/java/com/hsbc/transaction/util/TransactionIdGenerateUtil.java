@@ -1,17 +1,26 @@
 package com.hsbc.transaction.util;
 
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * 用于生成唯一ID，比如交易ID 和防重token
- */
 public class TransactionIdGenerateUtil {
 
+    // 格式化日期时间作为前缀，例如 "20250405133045"
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
+    // 原子计数器用于避免同一毫秒内重复
+    private static final AtomicInteger counter = new AtomicInteger(0);
+
     /**
-     * 生成交易ID
-     * @return 交易ID
+     * 生成带日期的交易流水号
+     * 格式：{日期时间}{6位随机数}{3位递增序号}
      */
     public static String generateTransactionId() {
-        return UUID.randomUUID().toString().replace("-", "");
+        String timestamp = LocalDateTime.now().format(formatter);
+        int randomPart = (int) (Math.random() * 900) + 100; // 生成三位随机整数
+        int sequence = counter.getAndIncrement() % 1000; // 循环使用三位序号
+
+        return timestamp + randomPart + String.format("%03d", sequence);
     }
 }

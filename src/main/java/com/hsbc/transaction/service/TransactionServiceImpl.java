@@ -1,6 +1,6 @@
 package com.hsbc.transaction.service;
 
-import com.hsbc.transaction.common.TransactionErrors;
+import com.hsbc.transaction.common.TransactionNotFoundException;
 import com.hsbc.transaction.model.Transaction;
 import com.hsbc.transaction.repository.TransactionRepository;
 import com.hsbc.transaction.request.CreateTransactionRequest;
@@ -8,12 +8,18 @@ import com.hsbc.transaction.request.UpdateTransactionRequest;
 import com.hsbc.transaction.response.TransactionResponse;
 import com.hsbc.transaction.util.TokenUtil;
 import com.hsbc.transaction.util.TransactionIdGenerateUtil;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 /**
@@ -31,16 +37,15 @@ public class TransactionServiceImpl implements TransactionService {
         this.transactionRepository = transactionRepository;
     }
 
+    // 创建一个并发安全的HashMap，用于存储锁对象，键为交易ID，值为锁对象。 主要用于控制更新和删除的并发操作
+    private final ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<>();
+
     @Override
     public TransactionResponse createTransaction(CreateTransactionRequest request) {
+        // 验证防重令牌
         TokenUtil.validateAndConsumeToken(request.getPreventDuplicateToken());
-
+        // 生成新的交易ID
         String newTransactionId = TransactionIdGenerateUtil.generateTransactionId();
-
-        // 检查交易 ID 是否已存在，防止重复创建
-        if (transactionRepository.existsById(newTransactionId)) {
-            throw TransactionErrors.repeatTransaction(String.format("重复的交易ID: %s", newTransactionId));
-        }
 
         // 构建Transaction实体
         Transaction transaction = new Transaction(
@@ -59,11 +64,12 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @Cacheable(value = "transactions", key = "#id")
     public TransactionResponse getTransactionById(String id) {
         // 根据ID查找交易，如果找不到则抛出TransactionNotFoundException
         Transaction transaction = transactionRepository.findById(id);
         if(transaction == null){
-            throw TransactionErrors.transactionNotFound(String.format("交易未找到，ID: %s", id));
+            throw new TransactionNotFoundException(String.format("交易未找到，ID: %s", id));
         }
         // 转换为响应DTO并返回
         return TransactionResponse.fromEntity(transaction);
@@ -71,44 +77,73 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public List<TransactionResponse> getAllTransactions() {
-        // 获取所有交易并转换为响应DTO列表
-        return transactionRepository.findAll().stream()
+        // 获取所有交易
+        List<Transaction> transactionList = transactionRepository.findAll();
+        if(transactionList.isEmpty()){
+            return new ArrayList<>();
+        }
+        // 转换为响应DTO列表
+        return transactionList.stream()
                 .map(TransactionResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
-    public Page<Transaction> getAllTransactions(Pageable pageable) {
-        return transactionRepository.findAll(pageable);
+    public Page<TransactionResponse> getAllTransactions(Pageable pageable) {
+        // 分页获取对应的交易列表
+        Page<Transaction> transactionPage = transactionRepository.findAll(pageable);
+        List<Transaction> content = transactionPage.getContent();
+        List<TransactionResponse> result;
+        if(content.isEmpty()){
+            result = new ArrayList<>();
+        }else {
+            // 转换为响应DTO列表
+            result = content.stream()
+                    .map(TransactionResponse::fromEntity)
+                    .toList();
+        }
+        return new PageImpl<>(result, pageable, transactionPage.getTotalElements());
     }
 
     @Override
+    @CacheEvict(value = "transactions", key = "#id")
     public TransactionResponse updateTransaction(String id, UpdateTransactionRequest request) {
-        // 检查交易是否存在
-        Transaction existingTransaction = transactionRepository.findById(id);
-        if(existingTransaction == null){
-            throw TransactionErrors.transactionNotFound(String.format("无法更新，交易未找到，ID: %s", id));
+        ReentrantLock lock = lockMap.computeIfAbsent(id, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            // 检查交易是否存在
+            Transaction existingTransaction = transactionRepository.findById(id);
+            if(existingTransaction == null){
+                throw new TransactionNotFoundException(String.format("无法更新，交易未找到，ID: %s", id));
+            }
+
+            // 更新交易信息
+            existingTransaction.setAmount(request.getAmount());
+            existingTransaction.setType(request.getType());
+            existingTransaction.setDescription(request.getDescription());
+
+            // 保存更新后的交易
+            Transaction updatedTransaction = transactionRepository.update(existingTransaction);
+            // 转换为响应DTO并返回
+            return TransactionResponse.fromEntity(updatedTransaction);
+        } finally {
+            lock.unlock();
         }
-
-        // 更新交易信息
-        existingTransaction.setAmount(request.getAmount());
-        existingTransaction.setType(request.getType());
-        existingTransaction.setDescription(request.getDescription());
-        // 日期通常不更新，或者根据业务需求更新为当前时间
-        // existingTransaction.setDate(LocalDateTime.now());
-
-        // 保存更新后的交易
-        Transaction updatedTransaction = transactionRepository.update(existingTransaction);
-        // 转换为响应DTO并返回
-        return TransactionResponse.fromEntity(updatedTransaction);
     }
 
     @Override
+    @CacheEvict(value = "transactions", key = "#id")
     public void deleteTransaction(String id) {
-        // 检查交易是否存在，如果不存在则抛出异常
-        if (!transactionRepository.existsById(id)) {
-            throw TransactionErrors.transactionNotFound((String.format("无法删除，交易未找到，ID: ", id)));
+        ReentrantLock lock = lockMap.computeIfAbsent(id, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            // 检查交易是否存在，如果不存在则抛出异常
+            if (!transactionRepository.existsById(id)) {
+                throw new TransactionNotFoundException((String.format("无法删除，交易未找到，ID: %s", id)));
+            }
+            // 删除交易
+            transactionRepository.deleteById(id);
+        } finally {
+            lock.unlock();
         }
-        // 删除交易
-        transactionRepository.deleteById(id);
     }
 }
