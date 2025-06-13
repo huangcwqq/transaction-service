@@ -114,7 +114,7 @@ class TokenUtilTest {
         TokenUtil.TokenInfo tokenInfo = new TokenUtil.TokenInfo(createdAt, false);
         TokenUtilTestHelper.putToken(token, tokenInfo);
 
-        LocalDateTime now = LocalDateTime.of(2025, 1, 1, 0, 0, 6); // 过期时间是 5 秒后
+        LocalDateTime now = LocalDateTime.of(2025, 1, 1, 0, 1, 0); // 过期时间是 5 秒后
         try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class)) {
             mockedStatic.when(LocalDateTime::now).thenReturn(now);
 

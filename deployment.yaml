@@ -1,0 +1,48 @@
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transaction-service
+  namespace: default
+  labels:
+    app: transaction-service
+spec:
+  replicas: 2 # 可根据需要调整副本数
+  selector:
+    matchLabels:
+      app: transaction-service
+  template:
+    metadata:
+      labels:
+        app: transaction-service
+    spec:
+      containers:
+        - name: transaction-service
+          image: transaction-service:latest # 替换为你实际的镜像地址
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          env:
+            - name: JAVA_OPTS
+              value: "-Xms256m -Xmx512m"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: transaction-service
+  namespace: default
+  labels:
+    app: transaction-service
+spec:
+  type: ClusterIP # 默认类型，适用于集群内部调用
+  selector:
+    app: transaction-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

@@ -18,8 +18,8 @@ public class TokenUtil {
     // 用于存储token信息
     public static final ConcurrentHashMap<String, TokenInfo> tokenStore = new ConcurrentHashMap<>();
 
-    // 过期时间，这里设置为 5 秒，便于测试
-    private static final long EXPIRE_TIME = 5;
+    // 过期时间，这里设置为 50 秒
+    private static final long EXPIRE_TIME = 50;
 
     /**
      * 校验防重token是否有效，有效则标记为已使用

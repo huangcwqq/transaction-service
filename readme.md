@@ -6,7 +6,7 @@
 
 ## 功能特性
 
-- 用于管理交易的 RESTful API
+- 用于管理交易的 Restful API
 - 内存数据存储（无持久化存储）
 - 完善的单元测试和集成测试
 - 使用 Docker 进行容器化部署
@@ -15,8 +15,10 @@
 
 ## API 接口
 
+- **GET /api/transactions/token**：获取访问令牌
 - **POST /api/transactions**：创建一笔新交易
 - **GET /api/transactions**：列出所有交易
+- **GET /api/transactions/page**：列出所有交易(分页)
 - **GET /api/transactions/{id}**：获取指定 ID 的交易详情
 - **PUT /api/transactions/{id}**：更新已有交易
 - **DELETE /api/transactions/{id}**：删除指定 ID 的交易
@@ -73,7 +75,7 @@
 ### 核心依赖
 
 - **Spring Boot Starter Web**
-   - 用于构建 RESTful API 并高效处理 HTTP 请求/响应。包含嵌入式 Web 服务器（如 Tomcat）。
+   - 用于构建 Restful API 并高效处理 HTTP 请求/响应。包含嵌入式 Web 服务器（如 Tomcat）。
 
 - **Spring Boot Starter Validation**
    - 提供对 Jakarta Bean Validation 的支持（例如 [@NotNull](file://jakarta/validation/constraints/NotNull.java#L4-L19)、`@Size`）。用于在处理交易数据前进行输入验证。
@@ -102,6 +104,10 @@
 
 - **Caffeine**
    - 一个内存缓存库，与 Spring 的缓存抽象集成，用于实现高性能的本地缓存。
+### 接口文档
+- **Springdoc openapi**
+  - 集成 Swagger UI 或 SpringDoc，便于他人快速了解 API 接口
+  - Swagger 的接口文档，项目启动后通过访问 `http://localhost:8080/swagger-ui/index.html` 可以查看 API 文档。
 
 ##  设计决策
 
@@ -109,7 +115,7 @@
 
 * **内存数据存储:** 根据题目要求，使用 `java.util.concurrent.ConcurrentHashMap` 在内存中存储交易数据。`ConcurrentHashMap` 保证了在多线程环境下的数据安全性和高效访问。
 
-* **RESTful API:** 严格遵循 RESTful 原则设计 API 端点，使用标准的 HTTP 方法和状态码。
+* **Restful API:** 严格遵循 Restful 原则设计 API 端点，使用标准的 HTTP 方法和状态码。
 
 * **DTOs:** 使用 `CreateTransactionRequest`、`UpdateTransactionRequest` 和 `TransactionResponse` 作为数据传输对象，将领域模型与外部接口解耦，并便于数据验证。
 
