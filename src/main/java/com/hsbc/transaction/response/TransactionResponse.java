@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 public class TransactionResponse {
     private String id;                // 交易唯一标识符
+    private String accountId;       // 相关的账户 ID，简化为单一账户系统
     private BigDecimal amount;        // 交易金额
     private TransactionType type;     // 交易类型
     private LocalDateTime date;       // 交易发生日期和时间
@@ -29,6 +30,7 @@ public class TransactionResponse {
     public static TransactionResponse fromEntity(Transaction transaction) {
         return TransactionResponse.builder()
                 .id(transaction.getId())
+                .accountId(transaction.getAccountId())
                 .amount(transaction.getAmount())
                 .type(transaction.getType())
                 .date(transaction.getDate())

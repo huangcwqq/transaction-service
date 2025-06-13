@@ -41,8 +41,8 @@ class TokenUtilTest {
      */
     @Test
     void testGenerateToken_ReturnsValidTokenAndStoresIt() {
+        LocalDateTime now = LocalDateTime.of(2025, 1, 1, 12, 0, 0);
         try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class)) {
-            LocalDateTime now = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
             mockedStatic.when(LocalDateTime::now).thenReturn(now);
 
             String token = TokenUtil.generateToken();
@@ -110,18 +110,13 @@ class TokenUtilTest {
     @Test
     void testValidateAndConsumeToken_TokenExpired_ThrowsInvalidRequestException() {
         String token = "abc123";
-        LocalDateTime createdAt = LocalDateTime.of(2020, 1, 1, 0, 0, 0);
+        LocalDateTime createdAt = LocalDateTime.of(2025, 1, 1, 0, 0, 0);
         TokenUtil.TokenInfo tokenInfo = new TokenUtil.TokenInfo(createdAt, false);
         TokenUtilTestHelper.putToken(token, tokenInfo);
 
+        LocalDateTime now = LocalDateTime.of(2025, 1, 1, 0, 0, 6); // 过期时间是 5 秒后
         try (MockedStatic<LocalDateTime> mockedStatic = mockStatic(LocalDateTime.class)) {
-            LocalDateTime now = LocalDateTime.of(2020, 1, 1, 0, 0, 6); // 过期时间是 5 秒后
             mockedStatic.when(LocalDateTime::now).thenReturn(now);
-
-            // 验证 Mock 是否生效
-            LocalDateTime testNow = LocalDateTime.now();
-            System.out.println("Mocked LocalDateTime.now(): " + testNow); // 应输出 2020-01-01T00:06
-
 
             InvalidRequestException exception = assertThrows(
                     InvalidRequestException.class,

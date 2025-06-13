@@ -40,6 +40,7 @@ public class TokenUtil {
         LocalDateTime expireTime = tokenInfo.createdAt().plusSeconds(EXPIRE_TIME);
         LocalDateTime now = LocalDateTime.now();
         if(now.isAfter(expireTime)){
+            tokenStore.remove(token);
             throw new InvalidRequestException("token 已过期！");
         }
         // 判断是否已使用

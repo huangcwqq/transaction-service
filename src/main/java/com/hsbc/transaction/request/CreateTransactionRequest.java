@@ -15,10 +15,6 @@ public class CreateTransactionRequest {
     @NotBlank(message = "防重token不能为空")
     private String preventDuplicateToken;
 
-    // 这里的 ID 由后端生成传输给前端，前端创建交易请求时传输该ID，可以更好地做幂等性处理，防止重复请求。
-    @NotBlank(message = "ID不能为空")
-    private String id;
-
     // 账号 ID
     @NotBlank(message = "账号ID不能为空")
     private String accountId;
