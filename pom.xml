@@ -5,8 +5,8 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.5</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <version>3.3.6</version>
+        <relativePath/>
     </parent>
     <groupId>com.hsbc</groupId>
     <artifactId>transactions</artifactId>
@@ -19,7 +19,7 @@
     </properties>
 
     <dependencies>
-        <!-- Spring Boot Web Starter，用于构建RESTful API -->
+        <!-- Spring Boot Web Starter，用于构建RestFul API -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -40,6 +40,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <!-- Spring Data Commons，用于数据访问和操作 -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-commons</artifactId>
         </dependency>
         <!-- JUnit Jupiter API for testing -->
         <dependency>
