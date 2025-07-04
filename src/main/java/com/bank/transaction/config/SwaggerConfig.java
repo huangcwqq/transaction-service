@@ -16,7 +16,7 @@ public class SwaggerConfig {
                         .title("银行交易管理API文档")
                         .description("提供交易的增删改查等操作接口")
                         .version("v1.0.0")
-                        .contact(new Contact().name("HSBC Dev Team").email("dev@hsbc.com"))
+                        .contact(new Contact().name("Bank Dev Team").email("dev@bank.com"))
                 )
                 .externalDocs(new ExternalDocumentation()
                         .description("项目文档")

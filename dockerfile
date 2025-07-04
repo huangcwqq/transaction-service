@@ -27,8 +27,8 @@ WORKDIR /app
 ENV JAVA_OPTS=""
 
 # 应用标识和元数据
-ENV HSBC_APPLICATION=transaction-service
-LABEL hsbc-app="$HSBC_APPLICATION"
+ENV Bank_APPLICATION=transaction-service
+LABEL bank-app="$bank_APPLICATION"
 
 # 复制构建产物，自动识别 jar
 COPY --from=builder /app/target/*.jar app.jar
