@@ -59,7 +59,7 @@
 ## 项目结构
 
 - 项目遵循标准的 Maven 结构，主要目录如下：
-    - `src/main/java/com/hsbc/transactions`:
+    - `src/main/java/com/bank/transactions`:
         - **common**：包含 异常类定义。
         - **config**：包含缓存和 swagger配置类，全局异常处理器。
         - **controller**：包含 交易 控制器。
@@ -70,7 +70,7 @@
         - **response**：返回外部响应的数据模型。
         - **service**：包含 交易主要业务逻辑。
         - **util**：包含token生成和校验、交易 ID 生成的工具类。
-    - `src/test/java/com/hsbc/transactions`：包含各种测试类。
+    - `src/test/java/com/bank/transactions`：包含各种测试类。
         - **controller**：包含controller 层的集成测试和模拟的并发测试。
         - **repository**：包含数据访问层的单元测试。
         - **service**：包含service 层业务的单元测试，并发控制测试和缓存机制测试。
